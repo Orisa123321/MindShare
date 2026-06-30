@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/studyshare?schema=public
+      - JWT_SECRET=dev-secret-key-do-not-use-in-production
+      - JWT_EXPIRES_IN=7d
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=testpassword
+      - AWS_ENDPOINT_URL=http://minio:9000
+      - AWS_S3_BUCKET_NAME=studyshare-uploads
+    depends_on:
+      - db
+      - minio
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+
+  db:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: studyshare
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: test
+      MINIO_ROOT_PASSWORD: testpassword
+    command: server /data --console-address ":9001"
+    volumes:
+      - "./.minio:/data"
+
+volumes:
+  postgres_data:
+
+

@@ -1,0 +1,168 @@
+// This is the Prisma schema for StudyShare.
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// USERS
+// ============================================================================
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  bio          String?
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  createdGroups  StudyGroup[]    @relation("GroupCreator")
+  memberships    GroupMember[]
+  materials      StudyMaterial[]
+  questions      ForumQuestion[]
+  answers        ForumAnswer[]
+  votes          Vote[]
+
+  @@map("users")
+}
+
+// ============================================================================
+// STUDY GROUPS
+// ============================================================================
+
+model StudyGroup {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  createdById String        @map("created_by")
+  createdBy   User          @relation("GroupCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  members     GroupMember[]
+  materials   StudyMaterial[]
+
+  @@map("study_groups")
+}
+
+// ============================================================================
+// GROUP MEMBERS (Many-to-Many: Users <-> StudyGroups)
+// ============================================================================
+
+model GroupMember {
+  id       String   @id @default(uuid())
+  joinedAt DateTime @default(now()) @map("joined_at")
+  role     GroupRole @default(MEMBER)
+
+  // Relations
+  userId  String     @map("user_id")
+  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId String     @map("group_id")
+  group   StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@map("group_members")
+}
+
+enum GroupRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+// ============================================================================
+// STUDY MATERIALS
+// ============================================================================
+
+model StudyMaterial {
+  id        String   @id @default(uuid())
+  title     String
+  fileUrl   String   @map("file_url")
+  fileName  String   @map("file_name")
+  fileSize  Int      @map("file_size") // bytes
+  mimeType  String   @map("mime_type")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Future AI columns — nullable, populated asynchronously by LLM
+  aiSummary String?  @map("ai_summary")
+  aiTags    String[] @map("ai_tags")
+
+  // Relations
+  uploadedById String     @map("uploaded_by")
+  uploadedBy   User       @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  groupId      String?    @map("group_id")
+  group        StudyGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@map("study_materials")
+}
+
+// ============================================================================
+// FORUM QUESTIONS
+// ============================================================================
+
+model ForumQuestion {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  userId  String        @map("user_id")
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers ForumAnswer[]
+
+  @@map("forum_questions")
+}
+
+// ============================================================================
+// FORUM ANSWERS
+// ============================================================================
+
+model ForumAnswer {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Future AI flag — marks AI-generated answers
+  isAiGenerated Boolean @default(false) @map("is_ai_generated")
+
+  // Relations
+  questionId String        @map("question_id")
+  question   ForumQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId     String        @map("user_id")
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes      Vote[]
+
+  @@map("forum_answers")
+}
+
+// ============================================================================
+// VOTES (Upvote/Downvote on Forum Answers)
+// ============================================================================
+
+model Vote {
+  id        String   @id @default(uuid())
+  value     Int      // +1 for upvote, -1 for downvote
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  userId   String      @map("user_id")
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answerId String      @map("answer_id")
+  answer   ForumAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, answerId]) // One vote per user per answer
+  @@map("votes")
+}

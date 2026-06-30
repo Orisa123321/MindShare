@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment variables — NEVER commit these
+.env
+.env.local
+.env.production
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Uploads (local dev storage — use S3/B2 in production)
+uploads/
+server/uploads/
+
+# Local dev infrastructure artifacts
+.localstack/
+.minio/
+
+# Prisma (keep migrations, ignore SQLite dev DB)
+server/prisma/*.db
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Vite cache
+client/.vite/
+
+# Coverage reports
+coverage/
