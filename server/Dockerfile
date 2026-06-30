@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Copy package files and install ALL dependencies (including devDeps for build)
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 # Copy source code and Prisma schema
 COPY prisma ./prisma
@@ -22,9 +22,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files and install production deps only
+# Copy package files
 COPY package*.json ./
-RUN npm ci --omit=dev
+
+# Install only production dependencies
+RUN npm install --omit=dev
 
 # Copy built output and Prisma artifacts
 COPY --from=builder /app/dist ./dist
