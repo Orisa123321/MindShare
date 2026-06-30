@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Users, FileText, Calendar, LogIn, LogOut, Trash2, Edit2, Crown } from 'lucide-react';
+import { Users, FileText, Calendar, LogIn, LogOut, Trash2, Edit2, Crown, Send, MessageSquare } from 'lucide-react';
 import { groupsApi } from '../api/groups.api';
+import { chatApi } from '../api/chat.api';
+import { getSocket } from '../config/socket';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { Avatar } from '../components/ui/Avatar';
@@ -22,15 +24,24 @@ export function GroupDetailPage() {
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [materials, setMaterials] = useState<StudyMaterial[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'materials' | 'members'>('materials');
+  const [activeTab, setActiveTab] = useState<'materials' | 'members' | 'chat'>('materials');
   const [showUpload, setShowUpload] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editDesc, setEditDesc] = useState('');
   const [saving, setSaving] = useState(false);
 
+  // Chat state
+  const [messages, setMessages] = useState<any[]>([]);
+  const [messageText, setMessageText] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const isOwner = user?.id === group?.createdById;
   const isMember = members.some((m) => m.userId === user?.id);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const fetchData = async () => {
     if (!id) return;
@@ -51,7 +62,58 @@ export function GroupDetailPage() {
     }
   };
 
-  useEffect(() => { fetchData(); }, [id]);
+  useEffect(() => {
+    fetchData();
+  }, [id]);
+
+  useEffect(() => {
+    if (activeTab === 'chat' && id && isMember) {
+      const loadMessages = async () => {
+        try {
+          const msgs = await chatApi.getGroupMessages(id);
+          setMessages(msgs);
+        } catch {
+          toast.error('Failed to load chat history');
+        }
+      };
+      loadMessages();
+
+      const socket = getSocket();
+      socket.emit('join_group', id);
+
+      const handleNewMessage = (msg: any) => {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
+      };
+
+      socket.on('new_message', handleNewMessage);
+
+      return () => {
+        socket.emit('leave_group', id);
+        socket.off('new_message', handleNewMessage);
+      };
+    }
+  }, [activeTab, id, isMember]);
+
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      scrollToBottom();
+    }
+  }, [messages, activeTab]);
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!messageText.trim() || !id || !user) return;
+    const socket = getSocket();
+    socket.emit('send_message', {
+      groupId: id,
+      userId: user.id,
+      content: messageText.trim(),
+    });
+    setMessageText('');
+  };
 
   const handleJoin = async () => {
     if (!id) return;
@@ -107,6 +169,7 @@ export function GroupDetailPage() {
   const tabs = [
     { key: 'materials' as const, label: 'Materials', icon: FileText, count: materials.length },
     { key: 'members' as const, label: 'Members', icon: Users, count: members.length },
+    { key: 'chat' as const, label: 'Group Chat', icon: MessageSquare, count: 0 },
   ];
 
   return (
@@ -202,6 +265,76 @@ export function GroupDetailPage() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {activeTab === 'chat' && (
+        <div className="card-flat flex flex-col h-[500px]">
+          {!isMember ? (
+            <div className="flex-1 flex items-center justify-center">
+              <EmptyState
+                icon={<MessageSquare size={28} />}
+                title="Join group to chat"
+                description="Only members of this group can view and send messages."
+                actionLabel="Join Group"
+                onAction={handleJoin}
+              />
+            </div>
+          ) : (
+            <>
+              {/* Message List */}
+              <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
+                {messages.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-sm" style={{ color: 'var(--text-muted)' }}>
+                    No messages yet. Send a message to start the conversation!
+                  </div>
+                ) : (
+                  messages.map((msg) => {
+                    const isSelf = msg.userId === user?.id;
+                    return (
+                      <div key={msg.id} className={`flex items-start gap-2.5 ${isSelf ? 'justify-end' : 'justify-start'}`}>
+                        {!isSelf && (
+                          <Avatar username={msg.user?.username || 'U'} size="sm" />
+                        )}
+                        <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 text-sm ${
+                          isSelf 
+                            ? 'bg-primary-500/10 text-[var(--text)] rounded-tr-none' 
+                            : 'bg-surface-2 text-[var(--text)] rounded-tl-none border'
+                        }`}
+                        style={!isSelf ? { borderColor: 'var(--border)' } : undefined}>
+                          {!isSelf && (
+                            <p className="text-[10px] font-bold mb-1" style={{ color: 'var(--text-secondary)' }}>
+                              {msg.user?.username}
+                            </p>
+                          )}
+                          <p className="leading-relaxed break-words">{msg.content}</p>
+                          <span className="block text-[9px] mt-1 text-right" style={{ color: 'var(--text-muted)' }}>
+                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Message Input Form */}
+              <form onSubmit={handleSendMessage} className="flex gap-2 border-t pt-4" style={{ borderColor: 'var(--border)' }}>
+                <input
+                  type="text"
+                  placeholder="Type a message..."
+                  className="flex-1 rounded-xl px-4 py-3 text-sm border outline-none focus:border-primary-500 transition-all"
+                  style={{ background: 'var(--surface-2)', borderColor: 'var(--border)', color: 'var(--text)' }}
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                />
+                <Button variant="primary" type="submit" disabled={!messageText.trim()} leftIcon={<Send size={14} />}>
+                  Send
+                </Button>
+              </form>
+            </>
+          )}
         </div>
       )}
 

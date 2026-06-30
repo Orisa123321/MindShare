@@ -25,6 +25,27 @@ export const initSocket = (server: HttpServer) => {
       console.log(`Socket ${socket.id} left room: question_${questionId}`);
     });
 
+    // Group Chat Rooms
+    socket.on('join_group', (groupId: string) => {
+      socket.join(`group_${groupId}`);
+      console.log(`Socket ${socket.id} joined group room: group_${groupId}`);
+    });
+
+    socket.on('leave_group', (groupId: string) => {
+      socket.leave(`group_${groupId}`);
+      console.log(`Socket ${socket.id} left group room: group_${groupId}`);
+    });
+
+    socket.on('send_message', async (data: { groupId: string; userId: string; content: string }) => {
+      try {
+        const { saveMessage } = await import('../services/chat.service.js');
+        const saved = await saveMessage(data.groupId, data.userId, data.content);
+        io.to(`group_${data.groupId}`).emit('new_message', saved);
+      } catch (error) {
+        console.error('Failed to save/broadcast group chat message:', error);
+      }
+    });
+
     socket.on('disconnect', () => {
       console.log(`Socket disconnected: ${socket.id}`);
     });

@@ -9,6 +9,7 @@ import groupRoutes from './routes/groups.routes.js';
 import materialRoutes from './routes/materials.routes.js';
 import forumRoutes from './routes/forum.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
+import chatRoutes from './routes/chat.routes.js';
 
 // ============================================================================
 // Express Application Setup
@@ -80,6 +81,7 @@ app.use('/api/v1/groups', groupRoutes);
 app.use('/api/v1/materials', materialRoutes);
 app.use('/api/v1/forum', forumRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/chat', chatRoutes);
 
 // ---------------------------------------------------------------------------
 // Error Handling (must be registered LAST)

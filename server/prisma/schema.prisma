@@ -30,6 +30,7 @@ model User {
   questions      ForumQuestion[]
   answers        ForumAnswer[]
   votes          Vote[]
+  chatMessages   ChatMessage[]
 
   @@map("users")
 }
@@ -50,6 +51,7 @@ model StudyGroup {
   createdBy   User          @relation("GroupCreator", fields: [createdById], references: [id], onDelete: Cascade)
   members     GroupMember[]
   materials   StudyMaterial[]
+  chatMessages ChatMessage[]
 
   @@map("study_groups")
 }
@@ -165,4 +167,22 @@ model Vote {
 
   @@unique([userId, answerId]) // One vote per user per answer
   @@map("votes")
+}
+
+// ============================================================================
+// CHAT MESSAGES (Real-time Group Chat)
+// ============================================================================
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  groupId   String     @map("group_id")
+  group     StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String     @map("user_id")
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
 }

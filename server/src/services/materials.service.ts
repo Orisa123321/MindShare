@@ -1,10 +1,41 @@
 import { prisma } from '../config/database.js';
 import { SearchQuery, NotFoundError, ForbiddenError } from '../types/index.js';
 import { deleteFile } from '../middleware/upload.middleware.js';
+import _pdf from 'pdf-parse';
+const pdf = _pdf as any;
 
 // ============================================================================
 // Study Materials Service
 // ============================================================================
+
+/**
+ * Extract text from material file URL based on its mimeType
+ */
+export async function extractTextFromMaterial(fileUrl: string, mimeType: string): Promise<string> {
+  try {
+    if (mimeType === 'application/pdf') {
+      const response = await fetch(fileUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      }
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const data = await pdf(buffer);
+      // Clean up text and limit length to avoid token limits (e.g. max 8000 characters)
+      return data.text ? data.text.substring(0, 10000) : '';
+    } else if (mimeType.startsWith('text/')) {
+      const response = await fetch(fileUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      }
+      const text = await response.text();
+      return text.substring(0, 10000);
+    }
+  } catch (error) {
+    console.error(`Failed to extract text from file (${fileUrl}):`, error);
+  }
+  return '';
+}
 
 /**
  * Create a new study material record.

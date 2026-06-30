@@ -94,10 +94,16 @@ export const summarizeMaterial = asyncHandler(async (req, res: Response) => {
 
   const material = await materialsService.getMaterialById(req.params.id as string);
   
-  // For MVP, we'll just generate a summary based on the title and metadata.
-  // In a full version, we would extract the text from the S3 file (using pdf-parse, etc.) 
-  // and pass the text to Gemini.
-  const promptContext = `Please provide a brief, educational summary of what a study material titled "${material.title}" might cover. Note that this is a simulated summary based on the title, as the full file content is not provided.`;
+  // Extract text from file (PDF or plain text)
+  const extractedText = await materialsService.extractTextFromMaterial(material.fileUrl, material.mimeType);
+  
+  let promptContext = '';
+  if (extractedText && extractedText.trim().length > 0) {
+    promptContext = `Here is the actual text extracted from the study material titled "${material.title}":\n\n${extractedText}`;
+  } else {
+    // Fallback if extraction failed or file type doesn't support extraction
+    promptContext = `Provide a summary based on the metadata. Title: "${material.title}". File Name: "${material.fileName}". (The full file content could not be read directly).`;
+  }
   
   const summary = await geminiService.summarize(promptContext);
   
