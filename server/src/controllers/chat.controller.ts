@@ -6,7 +6,7 @@ import * as groupsService from '../services/groups.service.js';
 
 export const getGroupMessages = asyncHandler(async (req, res: Response) => {
   const { user } = req as AuthenticatedRequest;
-  const { groupId } = req.params;
+  const groupId = req.params.groupId as string;
 
   // Verify group exists first
   await groupsService.getGroupById(groupId);
