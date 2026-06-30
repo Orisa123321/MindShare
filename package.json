@@ -1,8 +1,11 @@
 {
-  "name": "studyshare",
+  "name": "mindshare",
   "version": "1.0.0",
-  "description": "A study-sharing platform for students",
+  "description": "A collaborative study platform for students",
   "private": true,
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "workspaces": [
     "server",
     "client"
