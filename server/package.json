@@ -1,7 +1,7 @@
 {
-  "name": "studyshare-server",
+  "name": "mindshare-server",
   "version": "1.0.0",
-  "description": "StudyShare API — Backend server for the study-sharing platform",
+  "description": "MindShare API — Backend server for the study-sharing platform",
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon",

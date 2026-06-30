@@ -33,7 +33,7 @@ async function bootstrap(): Promise<void> {
       console.log(`
   ╔══════════════════════════════════════════════╗
   ║                                              ║
-  ║   📚 StudyShare API Server                   ║
+  ║   🧠 MindShare API Server                    ║
   ║                                              ║
   ║   → Local:   http://localhost:${PORT}          ║
   ║   → Health:  http://localhost:${PORT}/api/v1/health

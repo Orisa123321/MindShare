@@ -13,7 +13,7 @@ const apiClient = axios.create({
 // Request interceptor — attach JWT token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('studyshare_token');
+    const token = localStorage.getItem('mindshare_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -27,8 +27,8 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('studyshare_token');
-      localStorage.removeItem('studyshare_user');
+      localStorage.removeItem('mindshare_token');
+      localStorage.removeItem('mindshare_user');
       // Only redirect if not already on auth pages
       if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
         window.location.href = '/login';

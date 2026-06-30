@@ -1,4 +1,4 @@
-// This is the Prisma schema for StudyShare.
+// This is the Prisma schema for MindShare.
 // Learn more: https://pris.ly/d/prisma-schema
 
 generator client {

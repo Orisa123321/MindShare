@@ -24,7 +24,7 @@ async function main() {
   const testUser = await prisma.user.create({
     data: {
       username: 'TestStudent',
-      email: 'test@studyshare.com',
+      email: 'test@mindshare.com',
       passwordHash,
       bio: 'Just a test student ready to learn.',
     }
@@ -128,7 +128,7 @@ async function main() {
   }
 
   console.log('Seed completed successfully!');
-  console.log(`Test User Login -> Email: test@studyshare.com | Password: password123`);
+  console.log(`Test User Login -> Email: test@mindshare.com | Password: password123`);
 }
 
 main()

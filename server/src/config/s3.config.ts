@@ -19,4 +19,4 @@ export const s3Client = new S3Client({
   forcePathStyle: true, // Required for MinIO (local) and Backblaze B2 (production)
 });
 
-export const S3_BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || 'studyshare-uploads';
+export const S3_BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || 'mindshare-uploads';

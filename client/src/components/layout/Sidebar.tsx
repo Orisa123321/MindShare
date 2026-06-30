@@ -63,7 +63,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-400 flex items-center justify-center shadow-lg group-hover:shadow-[var(--shadow-glow)] transition-shadow">
               <BookOpen size={18} className="text-white" />
             </div>
-            <span className="text-lg font-extrabold gradient-text tracking-tight">StudyShare</span>
+            <span className="text-lg font-extrabold gradient-text tracking-tight">MindShare</span>
           </NavLink>
           <button
             className="md:hidden p-1.5 rounded-lg hover:bg-[var(--surface-2)] transition-colors cursor-pointer"

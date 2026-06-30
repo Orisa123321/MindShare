@@ -54,7 +54,7 @@ export function LoginPage() {
               <BookOpen size={28} className="text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-extrabold gradient-text mb-3">StudyShare</h1>
+          <h1 className="text-4xl font-extrabold gradient-text mb-3">MindShare</h1>
           <p className="text-lg font-medium text-white/70 mb-12">Learn together, grow together</p>
 
           {/* Feature cards */}
@@ -86,7 +86,7 @@ export function LoginPage() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-400 flex items-center justify-center shadow-lg">
               <BookOpen size={20} className="text-white" />
             </div>
-            <span className="text-xl font-extrabold gradient-text">StudyShare</span>
+            <span className="text-xl font-extrabold gradient-text">MindShare</span>
           </div>
 
           <h2 className="text-2xl font-extrabold mb-1" style={{ color: 'var(--text)' }}>Welcome back</h2>

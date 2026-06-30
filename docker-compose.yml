@@ -8,14 +8,14 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/studyshare?schema=public
+      - DATABASE_URL=postgresql://postgres:password@db:5432/mindshare?schema=public
       - JWT_SECRET=dev-secret-key-do-not-use-in-production
       - JWT_EXPIRES_IN=7d
       - AWS_REGION=us-east-1
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=testpassword
       - AWS_ENDPOINT_URL=http://minio:9000
-      - AWS_S3_BUCKET_NAME=studyshare-uploads
+      - AWS_S3_BUCKET_NAME=mindshare-uploads
     depends_on:
       - db
       - minio
@@ -36,7 +36,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: studyshare
+      POSTGRES_DB: mindshare
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

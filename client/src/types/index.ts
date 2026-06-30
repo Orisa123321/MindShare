@@ -1,5 +1,5 @@
 /* ==========================================
-   TypeScript Interfaces for StudyShare
+   TypeScript Interfaces for MindShare
    ========================================== */
 
 // ---- User ----

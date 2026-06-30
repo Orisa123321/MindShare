@@ -12,13 +12,13 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    const stored = localStorage.getItem('studyshare_theme') as Theme | null;
+    const stored = localStorage.getItem('mindshare_theme') as Theme | null;
     return stored || 'dark';
   });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('studyshare_theme', theme);
+    localStorage.setItem('mindshare_theme', theme);
   }, [theme]);
 
   const toggleTheme = useCallback(() => {

@@ -57,7 +57,7 @@ export const geminiService: AIServiceProvider = {
   async generateAnswer(question: string, context?: string): Promise<string> {
     if (!aiConfig.apiKey) throw new Error('AI features are disabled or missing API key');
 
-    const systemPrompt = 'You are a helpful study assistant on a platform called StudyShare. Provide clear, detailed, and accurate answers. Format your response in Markdown.';
+    const systemPrompt = 'You are a helpful study assistant on a platform called MindShare. Provide clear, detailed, and accurate answers. Format your response in Markdown.';
 
     let userPrompt = `Question: ${question}`;
     if (context) {
